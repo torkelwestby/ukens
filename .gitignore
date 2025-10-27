@@ -1,1 +1,3 @@
-data/
+/.streamlit/secrets.toml
+/data/brreg.csv
+/data/hubspot.csv

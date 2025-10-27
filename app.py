@@ -349,6 +349,8 @@ def in_range(v, lo, hi):
 st.title("🔍 HubSpot ↔ Brønnøysund matcher")
 st.markdown("Match bedrifter fra HubSpot med Brønnøysundregisteret. Filtrer på bransje, ansatte og omsetning.")
 
+
+
 # Hovedfiltre i toppen
 st.markdown("### ⚙️ Filtreringskriterier")
 
@@ -437,6 +439,30 @@ with st.expander("🎯 Avanserte innstillinger", expanded=False):
         default=list(SOURCE_LABEL.values()),
         help="Velg hvilke matchingsmetoder som skal brukes"
     )
+    
+    st.markdown("**🔍 Ekskluder poster uten data**")
+    col_excl1, col_excl2, col_excl3 = st.columns(3)
+    with col_excl1:
+        exclude_no_activity = st.checkbox("Dropp hvis ingen aktivitet i HubSpot", value=False)
+    with col_excl2:
+        exclude_no_revenue = st.checkbox("Dropp hvis ingen omsetning", value=False)
+    with col_excl3:
+        exclude_no_employees = st.checkbox("Dropp hvis ingen ansatte", value=False)
+    
+    st.markdown("**📊 Sortering**")
+    sort_by = st.selectbox(
+        "Sorter resultat etter",
+        options=[
+            "Omsetning (høyest til lavest)",
+            "Omsetning (lavest til høyest)",
+            "Ansatte (flest til færrest)",
+            "Ansatte (færrest til flest)",
+            "Siste aktivitet (nyest til eldst)",
+            "Siste aktivitet (eldst til nyest)",
+            "Navn (A-Å)",
+        ],
+        index=0,
+    )
 
 st.markdown("---")
 
@@ -477,8 +503,14 @@ if run:
         read_kwargs = dict(sep=",", dtype=str, engine="python", on_bad_lines="skip", encoding="utf-8")
         try:
             # med dette:
-            df_h = read_csv_secure("hubspot.csv", **read_kwargs)
-            df_b = read_csv_secure("brreg.csv", **read_kwargs)
+            # df_h = read_csv_secure("hubspot.csv", **read_kwargs)
+            # df_b = read_csv_secure("brreg.csv", **read_kwargs)
+            df_h = pd.read_parquet("data/clean/hubspot_clean.parquet")
+            # df_b = pd.read_parquet("data/clean/brreg_clean.parquet")
+
+            import glob, pandas as pd
+            files = sorted(glob.glob("data/clean/brreg_parquet_shards/*.parquet"))
+            df_b = pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
 
         except Exception as e:
             st.error(f"❌ Feil ved lesing av CSV: {e}")
