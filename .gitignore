@@ -1,3 +1,5 @@
 /.streamlit/secrets.toml
 /data/brreg.csv
 /data/hubspot.csv
+data/hubspot.csv
+data/clean/hubspot_clean.parquet
