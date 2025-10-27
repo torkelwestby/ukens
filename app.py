@@ -350,6 +350,44 @@ st.title("🔍 HubSpot ↔ Brønnøysund matcher")
 st.markdown("Match bedrifter fra HubSpot med Brønnøysundregisteret. Filtrer på bransje, ansatte og omsetning.")
 
 
+# Filopplasting
+st.markdown("### 📁 Last opp HubSpot-data")
+
+uploaded_file = st.file_uploader(
+    "Last opp HubSpot CSV-fil",
+    type=["csv"],
+    help="CSV-filen må inneholde kolonnene: 'Company name', 'Organisasjonsnummer' (valgfri), 'Last Activity Date' (valgfri)"
+)
+
+with st.expander("ℹ️ Krav til CSV-format", expanded=False):
+    st.markdown("""
+    **Påkrevde kolonner:**
+    - `Company name` – Bedriftens navn (påkrevd)
+    
+    **Valgfrie kolonner:**
+    - `Organisasjonsnummer` – Norsk org.nr (9 siffer)
+    - `Last Activity Date` – Siste aktivitetsdato
+    - `Record ID` – Unik identifikator (hvis tilgjengelig)
+    
+    **Format:**
+    - Fil må være i CSV-format (komma-separert)
+    - UTF-8 encoding anbefales
+    - Første rad skal inneholde kolonnenavn
+    
+    **Eksempel:**
+    ```
+    Company name,Organisasjonsnummer,Last Activity Date
+    Acme AS,123456789,2024-01-15
+    Tech Solutions Norge,,2024-02-20
+    ```
+    """)
+
+if not uploaded_file:
+    st.info("👆 Last opp en HubSpot CSV-fil for å starte matching-prosessen")
+    st.stop()
+
+st.success("✅ Fil lastet opp!")
+
 
 # Hovedfiltre i toppen
 st.markdown("### ⚙️ Filtreringskriterier")
