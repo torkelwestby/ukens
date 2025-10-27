@@ -502,6 +502,12 @@ with st.expander("🎯 Avanserte innstillinger", expanded=False):
         index=0,
     )
 
+@st.cache_data(show_spinner=False)
+def load_hubspot_csv(f) -> pd.DataFrame:
+    # auto-detekterer separator og håndterer BOM
+    return pd.read_csv(f, dtype=str, engine="python", sep=None, encoding="utf-8-sig", on_bad_lines="skip")
+
+
 st.markdown("---")
 
 run = st.button("▶️ Kjør matching", type="primary", use_container_width=True)
@@ -517,12 +523,20 @@ if run:
         try:
             import glob
 
-            # Les rene filer
-            df_h = pd.read_parquet("data/clean/hubspot_clean.parquet")
+            # 1) HubSpot = opplastet fil
+            df_h = load_hubspot_csv(uploaded_file)
+            if df_h.empty:
+                st.error("HubSpot-filen er tom eller kunne ikke leses")
+                st.stop()
+
+            # 2) Brreg = lokale shards
             files = sorted(glob.glob("data/clean/brreg_parquet_shards/*.parquet"))
+            if not files:
+                st.error("Fant ingen Brreg-filer i data/clean/brreg_parquet_shards/")
+                st.stop()
             df_b = pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
 
-            # Alias → appens forventede navn
+            # 3) Alias → forventede navn
             mapping_h = {
                 "company_name": "Company name",
                 "orgnr": "Organisasjonsnummer",
@@ -545,7 +559,7 @@ if run:
             if "naeringskode1.beskrivelse" not in df_b.columns:
                 df_b["naeringskode1.beskrivelse"] = ""
 
-            # Nøkler som tåler begge varianter
+            # 4) Nøkler som tåler variasjon
             hs_key = "Record ID" if "Record ID" in df_h.columns else (
                 "Company name" if "Company name" in df_h.columns else "company_name"
             )
@@ -555,6 +569,7 @@ if run:
         except Exception as e:
             st.error(f"❌ Feil ved lesing av data: {e}")
             st.stop()
+
 
 
         # Les og formater siste aktivitet fra HubSpot
