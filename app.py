@@ -43,7 +43,7 @@ with st.sidebar:
 # -------------------- Konfig --------------------
 ENHETS_BASE = "https://data.brreg.no/enhetsregisteret/api/enheter"
 REGN_BASE   = "https://data.brreg.no/regnskapsregisteret/regnskap"
-UA          = "hs-brreg-streamlit/1.0 (kontakt: you@example.com)"
+UA          = "hs-brreg-streamlit/1.0 (kontakt: torkel)"
 TIMEOUT     = 8
 RETRIES     = 1
 MAX_WORKERS = min(32, (os.cpu_count() or 8) * 4)
@@ -468,34 +468,6 @@ st.markdown("---")
 
 run = st.button("▶️ Kjør matching", type="primary", use_container_width=True)
 
-"""
-import io
-import boto3
-
-@st.cache_resource(show_spinner=False)
-def s3_client():
-    s = st.secrets["s3"]
-    return boto3.client(
-        "s3",
-        aws_access_key_id=s["aws_access_key_id"],
-        aws_secret_access_key=s["aws_secret_access_key"],
-        region_name=s["region_name"],
-    )
-
-def read_csv_secure(obj_key, **kwargs):
-    # bruk S3 i prod, lokal fallback ved utvikling
-    local_path = f"data/{obj_key.split('/')[-1]}"
-    if os.path.exists(local_path):
-        return pd.read_csv(local_path, **kwargs)
-    c = s3_client()
-    b = st.secrets["s3"]["bucket"]
-    p = st.secrets["s3"]["prefix"]
-    key = f"{p}/{obj_key}".strip("/")
-    obj = c.get_object(Bucket=b, Key=key)
-    return pd.read_csv(io.BytesIO(obj["Body"].read()), **kwargs)
-
-"""
-   
 # -------------------- Matching --------------------
 if run:
     with st.spinner("Leser filer og matcher bedrifter..."):
@@ -547,14 +519,10 @@ if run:
             st.stop()
 
 
-        HS_NAME_COL = "Company name"
         # Les og formater siste aktivitet fra HubSpot
         df_h["last_activity_raw"] = ensure_str_col(df_h, "Last Activity Date")
         df_h["last_activity_dt"]  = pd.to_datetime(df_h["last_activity_raw"], errors="coerce", utc=False)
         df_h["last_activity"]     = df_h["last_activity_dt"].apply(fmt_full_date)
-
-        HS_ORGNR_COL = "Organisasjonsnummer"
-        hs_key = "Record ID" if "Record ID" in df_h.columns else HS_NAME_COL
 
         df_h = df_h.drop_duplicates(subset=[hs_key])
         df_b = df_b.drop_duplicates(subset=["organisasjonsnummer"])
