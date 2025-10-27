@@ -502,19 +502,47 @@ if run:
         
         read_kwargs = dict(sep=",", dtype=str, engine="python", on_bad_lines="skip", encoding="utf-8")
         try:
-            # med dette:
-            # df_h = read_csv_secure("hubspot.csv", **read_kwargs)
-            # df_b = read_csv_secure("brreg.csv", **read_kwargs)
-            df_h = pd.read_parquet("data/clean/hubspot_clean.parquet")
-            # df_b = pd.read_parquet("data/clean/brreg_clean.parquet")
+            import glob
 
-            import glob, pandas as pd
+            # Les rene filer
+            df_h = pd.read_parquet("data/clean/hubspot_clean.parquet")
             files = sorted(glob.glob("data/clean/brreg_parquet_shards/*.parquet"))
             df_b = pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
 
+            # Alias → appens forventede navn
+            mapping_h = {
+                "company_name": "Company name",
+                "orgnr": "Organisasjonsnummer",
+                "last_activity_date": "Last Activity Date",
+                "record_id": "Record ID",
+            }
+            for src, dst in mapping_h.items():
+                if src in df_h.columns and dst not in df_h.columns:
+                    df_h[dst] = df_h[src]
+
+            mapping_b = {
+                "company_name": "navn",
+                "orgnr": "organisasjonsnummer",
+                "nace": "naeringskode1.kode",
+                "employees": "antallAnsatte",
+            }
+            for src, dst in mapping_b.items():
+                if src in df_b.columns and dst not in df_b.columns:
+                    df_b[dst] = df_b[src]
+            if "naeringskode1.beskrivelse" not in df_b.columns:
+                df_b["naeringskode1.beskrivelse"] = ""
+
+            # Nøkler som tåler begge varianter
+            hs_key = "Record ID" if "Record ID" in df_h.columns else (
+                "Company name" if "Company name" in df_h.columns else "company_name"
+            )
+            HS_NAME_COL = "Company name" if "Company name" in df_h.columns else "company_name"
+            HS_ORGNR_COL = "Organisasjonsnummer" if "Organisasjonsnummer" in df_h.columns else "orgnr"
+
         except Exception as e:
-            st.error(f"❌ Feil ved lesing av CSV: {e}")
+            st.error(f"❌ Feil ved lesing av data: {e}")
             st.stop()
+
 
         HS_NAME_COL = "Company name"
         # Les og formater siste aktivitet fra HubSpot
