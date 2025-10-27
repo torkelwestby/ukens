@@ -497,10 +497,10 @@ def read_csv_secure(obj_key, **kwargs):
 if run:
     with st.spinner("Leser filer og matcher bedrifter..."):
         # Les filer
-        hs_path = "data/hubspot.csv"
-        brreg_path = "data/brreg.csv"
+        # hs_path = "data/hubspot.csv"
+        # brreg_path = "data/brreg.csv"
         
-        read_kwargs = dict(sep=",", dtype=str, engine="python", on_bad_lines="skip", encoding="utf-8")
+        # read_kwargs = dict(sep=",", dtype=str, engine="python", on_bad_lines="skip", encoding="utf-8")
         try:
             import glob
 
