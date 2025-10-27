@@ -354,7 +354,7 @@ st.markdown("Match bedrifter fra HubSpot med Brønnøysundregisteret. Filtrer p�
 st.markdown("### 📁 Last opp HubSpot-data")
 
 uploaded_file = st.file_uploader(
-    "Last opp HubSpot CSV-fil",
+    "",
     type=["csv"],
     help="CSV-filen må inneholde kolonnene: 'Company name', 'Organisasjonsnummer' (valgfri), 'Last Activity Date' (valgfri)"
 )
