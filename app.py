@@ -468,6 +468,7 @@ st.markdown("---")
 
 run = st.button("▶️ Kjør matching", type="primary", use_container_width=True)
 
+"""
 import io
 import boto3
 
@@ -493,6 +494,8 @@ def read_csv_secure(obj_key, **kwargs):
     obj = c.get_object(Bucket=b, Key=key)
     return pd.read_csv(io.BytesIO(obj["Body"].read()), **kwargs)
 
+"""
+   
 # -------------------- Matching --------------------
 if run:
     with st.spinner("Leser filer og matcher bedrifter..."):
